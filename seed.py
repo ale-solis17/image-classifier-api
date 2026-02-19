@@ -3,48 +3,68 @@ import shutil
 import uuid
 
 from sqlmodel import Session
-from app.db.session import engine
+
+from app.core.config import UPLOAD_DIR, DATABASE_URL
+from app.db.session import engine, create_db_and_tables
 from app.db.models import Image
-from app.core.config import UPLOAD_DIR
 from app.services.preprocess import normalize_image_inplace
 
+# Carpeta donde tienes tu dataset inicial (por clases)
+# Ej:
+# seed_dataset/
+#   Bacteroides fragilis/
+#     img1.jpg
+#   Staphylococcus aureus/
+#     img2.jpg
 SEED_DIR = Path("seed_dataset")
+
+VALID_EXT = {".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff"}
 
 
 def main():
-    with Session(engine) as session:
+    print("DB:", DATABASE_URL)
+    print("SEED_DIR:", SEED_DIR.resolve())
+    print("UPLOAD_DIR:", UPLOAD_DIR.resolve())
 
-        for class_dir in SEED_DIR.iterdir():
+    if not SEED_DIR.exists():
+        raise FileNotFoundError(f"No existe {SEED_DIR}. Crea esa carpeta y pon clases dentro.")
+
+    create_db_and_tables()
+
+    inserted = 0
+    with Session(engine) as session:
+        for class_dir in sorted(SEED_DIR.iterdir()):
             if not class_dir.is_dir():
                 continue
 
-            label = class_dir.name
+            label = class_dir.name.strip()
+            files = [p for p in class_dir.iterdir() if p.is_file() and p.suffix.lower() in VALID_EXT]
 
-            for img in class_dir.iterdir():
-                if not img.is_file():
-                    continue
+            print(f"Clase '{label}': {len(files)} archivos")
 
-                new_name = f"{uuid.uuid4()}{img.suffix.lower()}"
-                dst = UPLOAD_DIR / new_name
+            for src in files:
+                new_name = f"{uuid.uuid4()}{src.suffix.lower()}"
+                dst = (UPLOAD_DIR / new_name)
 
-                shutil.copy(img, dst)
+                shutil.copy2(src, dst)
 
-                # normalizar (tu función)
+                # Normaliza TIFF/16-bit/multipage, etc (tu función)
                 normalize_image_inplace(dst)
 
                 row = Image(
-                    file_path=str(dst),
-                    original_name=img.name,
+                    file_path=str(dst.resolve()),
+                    original_name=src.name,
                     human_label=label,
-                    predicted_label=None,
-                    confidence=None,
-                    status="labeled",  # ← importante
+                    status="labeled",
                 )
-
                 session.add(row)
+                inserted += 1
 
         session.commit()
-        print("Dataset inicial cargado ✔")
+
+    print(f"✅ Insertados en DB: {inserted}")
+    if inserted == 0:
+        print("⚠️ No se importó nada. Revisa que seed_dataset tenga subcarpetas con imágenes válidas.")
 
 
 if __name__ == "__main__":

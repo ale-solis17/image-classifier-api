@@ -1,16 +1,29 @@
-# This is a sample Python script.
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from pathlib import Path
 
-# Press Mayús+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from app.api.routes import router
+from app.db.session import create_db_and_tables
+from app.ai.loader import load_labels, load_model
+from app.core.config import MODEL_PATH
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+
+    app.state.model = None
+    app.state.labels = None
+
+    if Path(MODEL_PATH).exists():
+        app.state.model = load_model()
+        app.state.labels = load_labels()
+        print("✅ Modelo cargado en startup")
+    else:
+        print("⚠️ No hay model.keras todavía. Levanto la API sin modelo. Corre POST /train.")
+
+    yield
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+app = FastAPI(title="Image Classifier API", lifespan=lifespan)
+app.include_router(router)

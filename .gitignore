@@ -12,3 +12,7 @@ wheels/
 .idea
 .vscode
 *.log
+
+seed_dataset/
+seed_dataset/Bacteroides fragilis/
+seed_dataset/Staphylococcus aureus/

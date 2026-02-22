@@ -1,4 +1,4 @@
-# 🧪 Image Classifier API – Backend
+# Image Classifier API – Backend
 
 # Integrantes del proyecto
 

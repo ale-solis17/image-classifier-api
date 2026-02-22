@@ -57,7 +57,7 @@ Gestión del tamaño del modelo entrenado.
 
 # Instrucciones para ejecutar
 
-* Clonar el repositorio:
+* Clonar el repositorio / O abrir el zip:
 
 ```git clone <repo>```
 ```cd image-classifier-api```

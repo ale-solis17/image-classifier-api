@@ -7,6 +7,8 @@ from app.db.session import create_db_and_tables
 from app.ai.loader import load_labels, load_model
 from app.core.config import MODEL_PATH
 
+from fastapi.middleware.cors import CORSMiddleware
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,4 +28,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Image Classifier API", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(router)

@@ -1,18 +1,3 @@
-# Instalar venv
-* Instalar uv si no lo tienes
-> Windows:```irm https://astral.sh/uv/install.ps1 | iex```
-
-1. Crear entorno, instalar dependencias: ```uv sync```
-2. Activar entorno: ```.venv\Scripts\Activate.ps1```
-
-
-# Ejecutar el proyecto
-Ejecuta: ```.\dev.ps1```
-
-
-
-
-
 # 🧪 Image Classifier API – Backend
 
 # Integrantes del proyecto
@@ -77,13 +62,17 @@ Gestión del tamaño del modelo entrenado.
 ```git clone <repo>```
 ```cd image-classifier-api```
 
-* Crear entorno:
+* Descargar dependencias: * Instalar uv si no lo tienes *
 
 ```uv sync```
 
-* Ejecutar servidor:
+* Activar entorno: 
 
-```uvicorn app.main:app --reload```
+```.venv\Scripts\Activate.ps1```
+
+* Ejecutar servidor
+
+```.\dev.ps1```
 
 * Abrir documentación:
 

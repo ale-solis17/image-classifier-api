@@ -7,7 +7,9 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.129.0",
     "numpy>=2.4.2",
+    "openai>=1.47.0",
     "pillow>=12.1.1",
+    "python-dotenv>=1.1.1",
     "python-multipart>=0.0.22",
     "sqlmodel>=0.0.34",
     "tensorflow>=2.20.0",

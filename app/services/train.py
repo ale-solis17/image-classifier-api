@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
@@ -55,13 +56,40 @@ def _build_label_map(samples: List[Tuple[str, str]]) -> Tuple[List[str], dict]:
 
 
 def _split(paths: List[str], y: List[int]) -> Tuple[List[str], List[int], List[str], List[int]]:
-    rng = random.Random(SEED)
-    idx = list(range(len(paths)))
-    rng.shuffle(idx)
+    if len(paths) != len(y):
+        raise ValueError("paths e y deben tener la misma longitud.")
 
-    n_val = max(1, int(len(idx) * VAL_SPLIT))
-    val_idx = idx[:n_val]
-    train_idx = idx[n_val:]
+    rng = random.Random(SEED)
+    indices_by_class: dict[int, List[int]] = defaultdict(list)
+    for idx, class_idx in enumerate(y):
+        indices_by_class[class_idx].append(idx)
+
+    train_idx: List[int] = []
+    val_idx: List[int] = []
+
+    for class_idx in sorted(indices_by_class):
+        class_indices = indices_by_class[class_idx][:]
+        rng.shuffle(class_indices)
+
+        class_count = len(class_indices)
+        desired_val = int(class_count * VAL_SPLIT)
+        if desired_val == 0 and class_count >= 2:
+            desired_val = 1
+
+        val_count = min(desired_val, class_count - 1)
+        val_count = max(0, val_count)
+
+        val_idx.extend(class_indices[:val_count])
+        train_idx.extend(class_indices[val_count:])
+
+    if not val_idx:
+        raise ValueError(
+            "No fue posible crear un conjunto de validacion estratificado. "
+            "Necesitas mas imagenes por clase para reservar muestras de validacion."
+        )
+
+    rng.shuffle(train_idx)
+    rng.shuffle(val_idx)
 
     train_paths = [paths[i] for i in train_idx]
     train_y = [y[i] for i in train_idx]

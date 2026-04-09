@@ -6,9 +6,10 @@ from app.api.routes import router
 from app.api.chat_routes import router as chat_router
 from app.db.session import create_db_and_tables
 from app.ai.loader import load_labels, load_model
-from app.core.config import MODEL_PATH
+from app.core.config import MODEL_PATH, UPLOAD_DIR
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 @asynccontextmanager
@@ -36,5 +37,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.include_router(router)
 app.include_router(chat_router)

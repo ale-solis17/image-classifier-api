@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 # Root del proyecto (…/classifier-api)
 BASE_DIR = Path(__file__).resolve().parents[2]
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 # Datos y DB
 DATA_DIR = (BASE_DIR / "data")

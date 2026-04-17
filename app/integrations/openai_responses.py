@@ -56,10 +56,15 @@ class OpenAIResponsesGateway:
         if error_name == "APITimeoutError":
             return OpenAITimeoutError("OpenAI no respondio a tiempo.")
 
+        if error_name == "AuthenticationError":
+            logger.warning("OpenAI rechazo la API key configurada para Responses API.")
+            return OpenAIConfigurationError(
+                "OpenAI rechazo la API key configurada. Revisa OPENAI_API_KEY en .env y reinicia el backend."
+            )
+
         if error_name in {
             "APIConnectionError",
             "APIStatusError",
-            "AuthenticationError",
             "PermissionDeniedError",
             "RateLimitError",
             "BadRequestError",
